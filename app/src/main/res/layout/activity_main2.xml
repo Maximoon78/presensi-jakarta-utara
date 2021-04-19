@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="center"
+    android:background="@drawable/backgroundgradient">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="730dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="100dp"
+        android:background="@drawable/kotakalus"
+        android:gravity="top"
+        android:orientation="vertical">
+
+        <ImageView
+            android:layout_width="229dp"
+            android:layout_height="204dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="-42dp"
+            android:gravity="center"
+            android:src="@drawable/looh" />
+
+        <TextView
+            android:id="@+id/closee"
+            android:layout_width="30dp"
+            android:layout_height="36dp"
+            android:layout_gravity="end"
+            android:layout_marginTop="-150dp"
+            android:gravity="center"
+            android:text="X"
+            android:textColor="@color/design_default_color_primary_dark"
+            android:textSize="30dp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/et_NewPass"
+            android:layout_width="315dp"
+            android:layout_height="82dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="100dp"
+            android:background="@drawable/roundbckg"
+            android:hint="Password Baru"
+            android:inputType="textPassword"
+            android:padding="15dp"
+            android:textColor="@android:color/white"
+            android:textColorHint="@android:color/black"
+            android:textSize="22dp"
+            app:passwordToggleEnabled= "true"
+            ></EditText>
+
+        <EditText
+            android:id="@+id/et_NewPass1"
+            android:layout_width="315dp"
+            android:layout_height="82dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="30dp"
+            android:background="@drawable/roundbckg"
+            android:hint="Konfirmasi Password Baru"
+            android:inputType="textPassword"
+            android:padding="15dp"
+            android:textColor="@android:color/white"
+            android:textColorHint="@android:color/black"
+            android:textSize="22dp"
+            app:passwordToggleEnabled= "true"
+            ></EditText>
+
+        <Button
+            android:id="@+id/btnSimpan"
+            android:layout_width="126dp"
+            android:layout_height="50dp"
+            android:layout_gravity="left"
+            android:layout_marginLeft="50dp"
+            android:layout_marginTop="30dp"
+            android:background="@drawable/tombolbuletbiru"
+            android:text="Simpan"
+            android:textAlignment="center"
+            android:textColor="@android:color/white"
+            android:textSize="22dp"></Button>
+    </LinearLayout>
+
+
+</LinearLayout>

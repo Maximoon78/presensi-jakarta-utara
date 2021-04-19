@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">My Application</string>
+    <string name="title_activity_main2">Main2Activity</string>
+    <string name="col1">Tanggal</string>
+    <string name="col2">Jam</string>
+    <string name="col3">Status</string>
+    <string name="rowtanggal1">12, Desember 2020</string>
+    <string name="rowjam1">18.30</string>
+    <string name="rowstat1">Terlambat</string>
+    <string name="kembali">Kembali</string>
+</resources>

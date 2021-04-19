@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/backgroundgradient"
+    >
+<!--    <![CDATA[-->
+<!--    xmlns:tools="http://schemas.android.com/tools"-->
+<!--    android:id="@+id/linearLayout"-->
+<!--    android:layout_width="match_parent"-->
+<!--    android:layout_height="200dp"-->
+<!--    android:layout_alignParentBottom="false"-->
+<!--    android:orientation="vertical">-->
+
+
+
+<!--    ]]>-->
+
+
+    <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/status"
+        app:srcCompat="@drawable/kotakalus" />
+
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Halo, "
+        app:layout_constraintTop_toTopOf="parent"
+        android:textColor="#080705"
+        android:textSize="29dp"
+        app:layout_constraintEnd_toStartOf="@+id/nama" />
+
+    <TextView
+        android:id="@+id/nama"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginLeft="10dp"
+        android:text="Nama Orang"
+        android:textColor="#080705"
+        android:textSize="29dp" />
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:adjustViewBounds="true"
+        android:cropToPadding="true"
+        android:src="@drawable/looh"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/bt_logout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintDimensionRatio="1:1"
+        />
+
+    <TextView
+        android:id="@+id/tanggal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:baselineAligned="false"
+        android:text="Tanggal"
+        android:textColor="#080705"
+        android:textSize="23dp"
+        app:layout_constraintTop_toBottomOf="@id/nama"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginLeft="10dp"
+        />
+
+    <TextView
+        android:id="@+id/status"
+        android:layout_width="131dp"
+        android:layout_height="26dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="56dp"
+        android:layout_marginRight="56dp"
+        android:text=""
+        android:textColor="#080705"
+        android:textSize="16dp"
+        app:layout_constraintEnd_toStartOf="@+id/imageView"
+        app:layout_constraintTop_toBottomOf="@+id/tanggal" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_begin="20dp" />
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/tampilans"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/AppTheme"
+        app:layout_constraintTop_toTopOf="parent">
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+
+    app:layout_constraintHeight_percent="0.1"
+    app:layout_constraintWidth_percent="0.3"
+
+
+    <Button
+        android:id="@+id/buttonPres"
+        android:layout_width="189dp"
+        android:layout_height="199dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="48dp"
+        android:background="@drawable/absenfix"
+
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/status" />
+
+    app:layout_constraintHeight_percent="0.1"
+    app:layout_constraintWidth_percent="0.3"
+
+    <Button
+        android:id="@+id/rekap"
+        android:layout_width="189dp"
+        android:layout_height="199dp"
+        android:layout_marginTop="48dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:background="@drawable/rekap"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/status" />
+
+    <TextView
+        android:id="@+id/bt_logout"
+        android:layout_width="149dp"
+        android:layout_height="0dp"
+        android:gravity="center"
+        android:text="LOGOUT"
+        android:textColor="#003fa3"
+        android:textSize="20dp"
+        android:textStyle="italic"
+
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/status"
+        app:layout_constraintBottom_toBottomOf="@id/status"/>
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="parent" />-->
+
+    <TextView
+        android:id="@+id/bt_ganti"
+        android:layout_width="188dp"
+        android:layout_height="26dp"
+        android:layout_marginStart="108dp"
+        android:layout_marginLeft="108dp"
+        android:layout_marginBottom="60dp"
+        android:gravity="center"
+        android:text="Ubah Password"
+        android:textSize="20dp"
+        android:textStyle="italic"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/tentang"
+        android:layout_width="125dp"
+        android:layout_height="21dp"
+        android:layout_gravity="end"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="4dp"
+        android:layout_marginRight="4dp"
+        android:gravity="left"
+
+        android:text="Tentang Aplikasi"
+        android:textColor="@color/black"
+        android:textSize="16dp"
+        app:layout_constraintEnd_toStartOf="@+id/status"
+        app:layout_constraintTop_toBottomOf="@+id/tanggal" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
