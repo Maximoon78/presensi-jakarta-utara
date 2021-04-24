@@ -11,7 +11,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.location.Address;
 import android.location.Geocoder;
@@ -35,14 +34,16 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.content.FileProvider;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.material.snackbar.Snackbar;
+import com.example.myapplication.POJO.User;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -55,27 +56,29 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
-public class Camera extends AppCompatActivity implements View.OnClickListener {
+public class CameraActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private ImageView fimageView;
+    static final int MY_PERMISSIONS_REQUEST_LOCATION = 1;
     private static final int CAMERA_REQUEST = 1888;
+    String currentPhotoPath;
+    String uID;
+    private ImageView fimageView;
     private Button kirim, kembali;
     private TextView textViewLokasiDanWaktu;
-    static final int MY_PERMISSIONS_REQUEST_LOCATION = 1;
     private Bitmap photo;
     private Uri aplot;
-    String currentPhotoPath;
     private StorageReference storageReference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
-        fimageView = (ImageView) findViewById(R.id.imageViewhasil);
-        kirim = (Button) findViewById(R.id.bt_kirim);
-        kembali = (Button) findViewById(R.id.bt_kembali);
-        textViewLokasiDanWaktu = (TextView) findViewById(R.id.textViewLokasiDanWaktu);
+        fimageView = findViewById(R.id.imageViewhasil);
+        kirim = findViewById(R.id.bt_kirim);
+        kembali = findViewById(R.id.bt_kembali);
+        textViewLokasiDanWaktu = findViewById(R.id.textViewLokasiDanWaktu);
         storageReference = FirebaseStorage.getInstance().getReference("Images");
+        uID = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) ==
                 PackageManager.PERMISSION_GRANTED &&
@@ -89,9 +92,18 @@ public class Camera extends AppCompatActivity implements View.OnClickListener {
 //            Toast.makeText(this, "Permission Location not Granted", Toast.LENGTH_LONG).show();
         }
 
-        kirim.setOnClickListener(this);
-        kembali.setOnClickListener(this);
         fimageView.setOnClickListener(this);
+
+        if (aplot == null) {
+            kirim.setOnClickListener(v -> {
+                Toast.makeText(this, "Silahkan ambil foto terlebih dahulu", Toast.LENGTH_SHORT).show();
+            });
+            kembali.setOnClickListener(v -> {
+                Toast.makeText(this, "Silahkan ambil foto terlebih dahulu", Toast.LENGTH_SHORT).show();
+            });
+        } else {
+
+        }
     }
 
     private void takePhoto() {
@@ -99,9 +111,9 @@ public class Camera extends AppCompatActivity implements View.OnClickListener {
         startActivityForResult(cameraIntent, CAMERA_REQUEST);
     }
 
-    private String getFileExt(Uri contentUri){
+    private String getFileExt(Uri contentUri) {
         ContentResolver c = getContentResolver();
-        MimeTypeMap mime= MimeTypeMap.getSingleton();
+        MimeTypeMap mime = MimeTypeMap.getSingleton();
         return mime.getExtensionFromMimeType(c.getType(contentUri));
     }
 
@@ -141,8 +153,11 @@ public class Camera extends AppCompatActivity implements View.OnClickListener {
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
             photo.compress(Bitmap.CompressFormat.JPEG, 30, bytes);
             String path = MediaStore.Images.Media.insertImage(getContentResolver(), photo, "Title", null);
-           aplot =  Uri.parse(path);
-            Uploader();
+            aplot = Uri.parse(path);
+
+            Log.d("Upload process", "onActivityResult: " + aplot);
+            kirim.setOnClickListener(this);
+            kembali.setOnClickListener(this);
         }
     }
 
@@ -150,27 +165,98 @@ public class Camera extends AppCompatActivity implements View.OnClickListener {
         final ProgressDialog pd = new ProgressDialog(this);
         pd.setTitle("Mohon tunggu");
         pd.show();
-        pd.dismiss();
 
         final String randomKey = UUID.randomUUID().toString();
-        StorageReference riversRef = storageReference.child("Absen/"+ randomKey);
 
-        riversRef.putFile(aplot)
-                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        // Get a URL to the uploaded content
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+        databaseReference.child("user").child(uID).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                User user = snapshot.getValue(User.class);
+                //get user data
 
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception exception) {
-                        // Handle unsuccessful uploads
-                        // ...
-                        Toast.makeText(getApplicationContext(), "Aplot gagal", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                if (user != null) {
+                    //photo storage location
+                    StorageReference riversRef = storageReference.child("Absen/" + user.getNama() + "/" + randomKey);
+
+                    //uploading photos to firebase storage
+                    riversRef.putFile(aplot)
+                            .addOnSuccessListener(taskSnapshot -> {
+                                long currentTimeEpoch = System.currentTimeMillis();
+                                int currentTimeHours = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+                                int startDayAbsensiHours = Utility.ConvertEpochToCalendar(Utility.startAbsenPagi).get(Calendar.HOUR_OF_DAY);
+                                int endDayAbsensiHours = Utility.ConvertEpochToCalendar(Utility.endAbsenPagi).get(Calendar.HOUR_OF_DAY);
+                                int startNoonAbsensiHours = Utility.ConvertEpochToCalendar(Utility.startAbsenSore).get(Calendar.HOUR_OF_DAY);
+                                int endNoonAbsensiHours = Utility.ConvertEpochToCalendar(Utility.endAbsenSore).get(Calendar.HOUR_OF_DAY);
+
+                                // TODO: 4/24/2021 REMOVE LOGGING
+                                //if successful
+                                Log.d("uploader", "onDataChange: Upload successfull!");
+                                Log.d("uploader", "onDataChange: " + currentTimeEpoch);
+                                Log.d("JAM", "onDataChange: " + Utility.startAbsenSore);
+
+                                //input data into absensi database
+                                //------------------------------
+
+                                if ((currentTimeHours >= startDayAbsensiHours & currentTimeHours <= endDayAbsensiHours)) {
+                                    // TODO: 4/24/2021 REMOVE LOGGING
+                                    //absen pagi
+                                    Log.d("uploader", "onDataChange: absen pagi");
+                                    Log.d("absen pagi", "current time: " + currentTimeHours);
+                                    Log.d("absen pagi", "startday: " + startDayAbsensiHours);
+                                    Log.d("absen pagi", "endday: " + endDayAbsensiHours);
+                                    Log.d("absen pagi", "1st condition: " + (currentTimeHours > startDayAbsensiHours));
+                                    Log.d("absen pagi", "2nd condition: " + (currentTimeHours < endDayAbsensiHours));
+                                    inputDataAbsen(currentTimeEpoch, uID, Utility.startAbsenPagi, riversRef);
+                                } else if ((currentTimeHours >= startNoonAbsensiHours & currentTimeHours <= endNoonAbsensiHours)) {
+                                    // TODO: 4/24/2021 REMOVE LOGGING
+                                    //absen sore
+                                    Log.d("uploader", "onDataChange: absen sore");
+                                    Log.d("absen sore", "current time: " + currentTimeHours);
+                                    Log.d("absen sore", "startday: " + startNoonAbsensiHours);
+                                    Log.d("absen sore", "endday: " + startNoonAbsensiHours);
+                                    Log.d("absen sore", "1st condition: " + (currentTimeHours > startNoonAbsensiHours));
+                                    Log.d("absen sore", "2nd condition: " + (currentTimeHours < startNoonAbsensiHours));
+                                    inputDataAbsen(currentTimeEpoch, uID, Utility.startAbsenSore, riversRef);
+                                }
+                                savePhoto();
+                                pd.dismiss();
+                                Toast.makeText(CameraActivity.this, "Foto berhasil di upload", Toast.LENGTH_SHORT).show();
+                                startActivity(new Intent(CameraActivity.this, HomeActivity.class));
+                            })
+                            .addOnFailureListener(exception -> {
+                                // Handle unsuccessful uploads
+                                // ...
+                                Toast.makeText(getApplicationContext(), "Upload gagal", Toast.LENGTH_SHORT).show();
+                            });
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
+    private void inputDataAbsen(Long waktuSaatIni, String uID, Long JenisWaktuAbsen, StorageReference storageReference) {
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+
+        //step 1: get time in milis (epoch), check whether the time is current day or not
+        databaseReference.child("absensi").child(String.valueOf(JenisWaktuAbsen)).child(uID).child("Waktu").setValue(waktuSaatIni);
+
+        //step 2: get current location and put into absensi
+        databaseReference.child("absensi").child(String.valueOf(JenisWaktuAbsen)).child(uID).child("Lokasi").setValue(textViewLokasiDanWaktu.getText().toString().substring(0, textViewLokasiDanWaktu.getText().toString().indexOf("\n")));
+
+        //step 3: get file link and send into firebase
+        storageReference.getDownloadUrl().addOnSuccessListener(taskSnapshots -> {
+            Log.d("Uploader", "onDataChange: Photo link after uploading" + taskSnapshots.toString());
+            databaseReference.child("absensi").child(String.valueOf(JenisWaktuAbsen)).child(uID).child("Foto").setValue(taskSnapshots.toString());
+        });
+
+        //step 4: for recap ease, put current end of the day into user database
+        databaseReference.child("user").child(uID).child("absensi").child(String.valueOf(JenisWaktuAbsen)).child("WaktuAbsen").setValue(waktuSaatIni);
+        databaseReference.child("user").child(uID).child("absensi").child(String.valueOf(JenisWaktuAbsen)).child("HariAbsen").setValue(Utility.startAbsenPagi);
     }
 
     private File createImageFile() throws IOException {
@@ -209,7 +295,7 @@ public class Camera extends AppCompatActivity implements View.OnClickListener {
 
     private void getCurrentLocation() {
 
-        final LocationManager locationManager = (LocationManager) Camera.this.getSystemService(Context.LOCATION_SERVICE);
+        final LocationManager locationManager = (LocationManager) CameraActivity.this.getSystemService(Context.LOCATION_SERVICE);
 
         LocationListener locationListener = new LocationListener() {
             @Override
@@ -233,7 +319,7 @@ public class Camera extends AppCompatActivity implements View.OnClickListener {
 
             @Override
             public void onProviderDisabled(String s) {
-                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(Camera.this);
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(CameraActivity.this);
                 alertDialogBuilder.setTitle("GPS mati");
                 alertDialogBuilder
                         .setMessage("Apakah ingin menghidupkan GPS?")
@@ -253,8 +339,8 @@ public class Camera extends AppCompatActivity implements View.OnClickListener {
             }
         };
 
-        if (ActivityCompat.checkSelfPermission(Camera.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(Camera.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, MY_PERMISSIONS_REQUEST_LOCATION);
+        if (ActivityCompat.checkSelfPermission(CameraActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(CameraActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, MY_PERMISSIONS_REQUEST_LOCATION);
             return;
         }
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 50, locationListener);
@@ -265,7 +351,7 @@ public class Camera extends AppCompatActivity implements View.OnClickListener {
         Geocoder geocoder;
         List<Address> addresses;
         String address = null;
-        geocoder = new Geocoder(Camera.this, Locale.getDefault());
+        geocoder = new Geocoder(CameraActivity.this, Locale.getDefault());
         try {
             addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
             address = addresses.get(0).getLocality();
@@ -281,13 +367,10 @@ public class Camera extends AppCompatActivity implements View.OnClickListener {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.bt_kirim:
-                Toast.makeText(this, "Foto berhasil di upload", Toast.LENGTH_SHORT).show();
-                savePhoto();
-
-                startActivity(new Intent(Camera.this, Home.class));
+                Uploader();
                 break;
             case R.id.bt_kembali:
-                startActivity(new Intent(Camera.this, Camera.class));
+                startActivity(new Intent(CameraActivity.this, CameraActivity.class));
                 break;
             case R.id.imageViewhasil:
                 takePhoto();
@@ -305,7 +388,7 @@ public class Camera extends AppCompatActivity implements View.OnClickListener {
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
+                                           String[] permissions, int[] grantResults) {
         switch (requestCode) {
             case MY_PERMISSIONS_REQUEST_LOCATION: {
                 // If request is cancelled, the result arrays are empty.
