@@ -54,4 +54,7 @@ dependencies {
 
     // FirebaseUI for Cloud Storage
     implementation 'com.firebaseui:firebase-ui-storage:7.1.0'
+
+    //Dexter for Permission
+    implementation 'com.karumi:dexter:6.2.2'
 }
