@@ -143,19 +143,23 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == CAMERA_REQUEST && resultCode == Activity.RESULT_OK) {
-            assert data != null;
+        if (resultCode != RESULT_CANCELED && data != null) {
+            if (requestCode == CAMERA_REQUEST && resultCode == Activity.RESULT_OK) {
+                assert data != null;
 
-            photo = (Bitmap) data.getExtras().get("data");
-            fimageView.setImageBitmap(photo);
-            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-            photo.compress(Bitmap.CompressFormat.JPEG, 30, bytes);
-            String path = MediaStore.Images.Media.insertImage(getContentResolver(), photo, "Title", null);
-            aplot = Uri.parse(path);
+                photo = (Bitmap) data.getExtras().get("data");
+                fimageView.setImageBitmap(photo);
+                ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+                photo.compress(Bitmap.CompressFormat.JPEG, 30, bytes);
+                String path = MediaStore.Images.Media.insertImage(getContentResolver(), photo, "Title", null);
+                aplot = Uri.parse(path);
 
-            Log.d("Upload process", "onActivityResult: " + aplot);
-            kirim.setOnClickListener(this);
-            kembali.setOnClickListener(this);
+                Log.d("Upload process", "onActivityResult: " + aplot);
+                kirim.setOnClickListener(this);
+                kembali.setOnClickListener(this);
+            } else {
+                Toast.makeText(this, "Error!", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
