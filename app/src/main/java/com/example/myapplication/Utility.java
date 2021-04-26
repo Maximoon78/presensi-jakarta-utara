@@ -1,5 +1,19 @@
 package com.example.myapplication;
 
+import android.content.Context;
+import android.graphics.Color;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
+
+import com.example.myapplication.POJO.DataAbsen;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
 import java.util.Calendar;
 import java.util.Date;
 
@@ -103,6 +117,79 @@ public class Utility {
         today.clear(Calendar.MINUTE);
         today.clear(Calendar.SECOND);
         return today.getTime();
+    }
+
+    public static boolean isNoon(int hours) {
+        boolean isNoon = false;
+        if (hours >= 15) {
+            if (hours < 17) {
+                isNoon = true;
+            }
+        }
+        return isNoon;
+    }
+
+    public static boolean isDay(int hours) {
+        boolean isDay = false;
+        if (hours >= 7) {
+            if (hours < 10) {
+                isDay = true;
+            }
+        }
+        return isDay;
+    }
+
+    public static boolean isAbsenceDay(int dayOfWeek) {
+        if (dayOfWeek >= 1) {
+            return dayOfWeek <= 5;
+        }
+        return false;
+    }
+
+    public static void getUserAbsenceStatus(String userID, TextView statusAbsensiPagi, TextView statusAbsensiSore, Context context) {
+        DatabaseReference absensiDatabaseReference = FirebaseDatabase.getInstance().getReference().child("absensi");
+
+        //get status absen pagi
+        absensiDatabaseReference.child(String.valueOf(String.valueOf(Utility.startAbsenPagi))).child(userID).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                DataAbsen dataAbsen = snapshot.getValue(DataAbsen.class);
+                if (dataAbsen == null) {
+                    statusAbsensiPagi.setText("Belum Absen Pagi");
+                    statusAbsensiPagi.setBackground(ContextCompat.getDrawable(context, R.drawable.button_red));
+                } else {
+                    statusAbsensiPagi.setText("Sudah Absen Pagi");
+                    statusAbsensiPagi.setBackground(ContextCompat.getDrawable(context, R.drawable.button_green));
+                }
+                statusAbsensiPagi.setTextColor(Color.parseColor("#ffffff"));
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
+        //get status absen sore
+        absensiDatabaseReference.child(String.valueOf(String.valueOf(Utility.startAbsenSore))).child(userID).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                DataAbsen dataAbsen = snapshot.getValue(DataAbsen.class);
+                if (dataAbsen == null) {
+                    statusAbsensiSore.setText("Belum Absen Sore");
+                    statusAbsensiSore.setBackground(ContextCompat.getDrawable(context, R.drawable.button_red));
+                } else {
+                    statusAbsensiSore.setText("Sudah Absen Sore");
+                    statusAbsensiSore.setBackground(ContextCompat.getDrawable(context, R.drawable.button_green));
+                }
+                statusAbsensiSore.setTextColor(Color.parseColor("#ffffff"));
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 }
 

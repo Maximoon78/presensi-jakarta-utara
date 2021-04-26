@@ -2,9 +2,13 @@ package com.example.myapplication;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.ImageView;
+import android.widget.ScrollView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -20,6 +24,8 @@ public class RekapActivity extends AppCompatActivity {
     private ImageView bt_balik;
     private RecyclerView recyclerView;
     private RekapAbsensiAdapter rekapAbsensiAdapter;
+    private ScrollView scrollView;
+    private CardView titleCardRekap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,12 +42,13 @@ public class RekapActivity extends AppCompatActivity {
             Intent intent = new Intent(RekapActivity.this, HomeActivity.class);
             startActivity(intent);
         });
-
     }
 
     private void initializeUI() {
         bt_balik = findViewById(R.id.backButton);
         recyclerView = findViewById(R.id.rekapAbsensiRecyclerView);
+        scrollView = findViewById(R.id.scrollview_rekap);
+        titleCardRekap = findViewById(R.id.title_card_rekap);
     }
 
     private void getRekapAbsensi(String userID) {

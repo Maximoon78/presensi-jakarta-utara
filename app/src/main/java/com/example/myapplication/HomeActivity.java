@@ -47,13 +47,13 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        getUserAbsenceStatus(userID);
+        Utility.getUserAbsenceStatus(userID, statusAbsensiPagi, statusAbsensiSore, HomeActivity.this);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        getUserAbsenceStatus(userID);
+        Utility.getUserAbsenceStatus(userID, statusAbsensiPagi, statusAbsensiSore, HomeActivity.this);
     }
 
     @Override
@@ -104,9 +104,6 @@ public class HomeActivity extends AppCompatActivity {
         //get user name
         getUserName();
 
-        //get status
-        getUserAbsenceStatus(userID);
-
         tentang.setOnClickListener(v -> {
             Intent intent = new Intent(HomeActivity.this, TentangAppActivity.class);
             startActivity(intent);
@@ -121,7 +118,7 @@ public class HomeActivity extends AppCompatActivity {
         bulan = calendar.get(Calendar.MONTH) + 1;
         bulan1 = Utility.convertMonthToBulan(bulan);
         tahun = calendar.get(Calendar.YEAR);
-        String hariAbsen = Utility.convertDayOfWeekToHari(Calendar.DAY_OF_WEEK);
+        String hariAbsen = Utility.convertDayOfWeekToHari(Calendar.getInstance().get(Calendar.DAY_OF_WEEK));
 
         // TODO: 4/24/2021 remove this, just for debugging purposes
         int jamAbsen = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
@@ -158,101 +155,79 @@ public class HomeActivity extends AppCompatActivity {
         textView2.setText(tanggalFix);
 
         //clicklistener for presensi
-        presensi.setOnClickListener(v -> controlButtonAbsensi());
+        presensi.setOnClickListener(v -> getUserAbsenceStatus(userID, Calendar.getInstance().get(Calendar.HOUR_OF_DAY)));
     }
 
-    private void controlButtonAbsensi() {
+    private void controlButtonAbsensi(boolean isAlready) {
         int currentTimeHours = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+        Log.d("count", "controlButtonAbsensi: this is run");
         int startDayAbsensiHours = Utility.ConvertEpochToCalendar(Utility.startAbsenPagi).get(Calendar.HOUR_OF_DAY);
         int endDayAbsensiHours = Utility.ConvertEpochToCalendar(Utility.endAbsenPagi).get(Calendar.HOUR_OF_DAY);
         int startNoonAbsensiHours = Utility.ConvertEpochToCalendar(Utility.startAbsenSore).get(Calendar.HOUR_OF_DAY);
         int endNoonAbsensiHours = Utility.ConvertEpochToCalendar(Utility.endAbsenSore).get(Calendar.HOUR_OF_DAY);
 
-        if (!(currentTimeHours >= startNoonAbsensiHours & currentTimeHours <= endNoonAbsensiHours)) {
-            // TODO: 4/24/2021 REMOVE LOGGING
-            Log.d("control button absensi2", "current time: " + currentTimeHours);
-            Log.d("control button absensi2", "startday: " + startNoonAbsensiHours);
-            Log.d("control button absensi2", "endday: " + endNoonAbsensiHours);
-            Log.d("control button absensi2", "1st condition: " + (currentTimeHours >= startNoonAbsensiHours));
-            Log.d("control button absensi2", "2nd condition: " + (currentTimeHours <= startNoonAbsensiHours));
-            if (statusAbsensiPagi.getText().equals("Belum Absen Pagi")) {
-                if ((currentTimeHours >= startDayAbsensiHours & currentTimeHours <= endDayAbsensiHours)) {
+        //if today is eligible
+        if (Utility.isAbsenceDay(Calendar.getInstance().get(Calendar.DAY_OF_WEEK))) {
+            //is day
+            if (Utility.isDay(currentTimeHours)) {
+                if (!isAlready) {
                     Intent intent = new Intent(HomeActivity.this, CameraActivity.class);
                     startActivity(intent);
-                } else if (currentTimeHours < startDayAbsensiHours) {
-                    Toast.makeText(getApplicationContext(), "Belum Waktu Absen Pagi", Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(getApplicationContext(), "Anda Melewati Absen Pagi", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Anda Sudah Absen Pagi", Toast.LENGTH_SHORT).show();
                 }
-            } else if (statusAbsensiPagi.getText().equals("Sudah Absen Pagi")) {
-                Toast.makeText(getApplicationContext(), "Tidak Bisa Absen Lagi", Toast.LENGTH_SHORT).show();
-            }
-        } else if (!(currentTimeHours >= startDayAbsensiHours & currentTimeHours <= endDayAbsensiHours)) {
-            // TODO: 4/24/2021 REMOVE LOGGING
-            Log.d("control button absensi", "current time: " + currentTimeHours);
-            Log.d("control button absensi", "startday: " + startDayAbsensiHours);
-            Log.d("control button absensi", "endday: " + endDayAbsensiHours);
-            Log.d("control button absensi", "1st condition: " + (currentTimeHours >= startDayAbsensiHours));
-            Log.d("control button absensi", "2nd condition: " + (currentTimeHours <= endDayAbsensiHours));
-            if (statusAbsensiSore.getText().equals("Belum Absen Sore")) {
-                if ((currentTimeHours >= startNoonAbsensiHours & currentTimeHours <= endNoonAbsensiHours)) {
+            } else if (Utility.isNoon(currentTimeHours)) {
+                Log.d("isNoon", "controlButtonAbsensi: sore");
+                if (!isAlready) {
                     Intent intent = new Intent(HomeActivity.this, CameraActivity.class);
                     startActivity(intent);
-                } else if (currentTimeHours < startNoonAbsensiHours) {
-                    Toast.makeText(getApplicationContext(), "Belum Waktu Absen Sore", Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(getApplicationContext(), "Anda Melewati Absen Sore", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Anda Sudah Absen Sore", Toast.LENGTH_SHORT).show();
                 }
-            } else if (statusAbsensiSore.getText().equals("Sudah Absen Sore")) {
-                Toast.makeText(getApplicationContext(), "Tidak Bisa Absen Lagi", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Tidak Bisa Absen", Toast.LENGTH_SHORT).show();
             }
+        } else {
+            Toast.makeText(this, "Absensi hanya hari senin - jumat", Toast.LENGTH_SHORT).show();
         }
+
     }
 
-    private void getUserAbsenceStatus(String userID) {
+    private void getUserAbsenceStatus(String userID, int currentTimeHours) {
         DatabaseReference absensiDatabaseReference = FirebaseDatabase.getInstance().getReference().child("absensi");
 
         //get status absen pagi
-        absensiDatabaseReference.child(String.valueOf(String.valueOf(Utility.startAbsenPagi))).child(userID).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                DataAbsen dataAbsen = snapshot.getValue(DataAbsen.class);
-                if (dataAbsen == null) {
-                    statusAbsensiPagi.setText("Belum Absen Pagi");
-                    statusAbsensiPagi.setBackground(ContextCompat.getDrawable(HomeActivity.this, R.drawable.button_red));
-                } else {
-                    statusAbsensiPagi.setText("Sudah Absen Pagi");
-                    statusAbsensiPagi.setBackground(ContextCompat.getDrawable(HomeActivity.this, R.drawable.button_green));
+        if (Utility.isDay(currentTimeHours)) {
+            absensiDatabaseReference.child(String.valueOf(String.valueOf(Utility.startAbsenPagi))).child(userID).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    DataAbsen dataAbsen = snapshot.getValue(DataAbsen.class);
+                    controlButtonAbsensi(dataAbsen != null);
+                    statusAbsensiPagi.setTextColor(Color.parseColor("#ffffff"));
                 }
-                statusAbsensiPagi.setTextColor(Color.parseColor("#ffffff"));
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
 
-            }
-        });
-
-        //get status absen sore
-        absensiDatabaseReference.child(String.valueOf(String.valueOf(Utility.startAbsenSore))).child(userID).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                DataAbsen dataAbsen = snapshot.getValue(DataAbsen.class);
-                if (dataAbsen == null) {
-                    statusAbsensiSore.setText("Belum Absen Sore");
-                    statusAbsensiSore.setBackground(ContextCompat.getDrawable(HomeActivity.this, R.drawable.button_red));
-                } else {
-                    statusAbsensiSore.setText("Sudah Absen Sore");
-                    statusAbsensiSore.setBackground(ContextCompat.getDrawable(HomeActivity.this, R.drawable.button_green));
                 }
-                statusAbsensiSore.setTextColor(Color.parseColor("#ffffff"));
-            }
+            });
+        } else if (Utility.isNoon(currentTimeHours)) {
+            //get status absen sore
+            absensiDatabaseReference.child(String.valueOf(String.valueOf(Utility.startAbsenSore))).child(userID).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    DataAbsen dataAbsen = snapshot.getValue(DataAbsen.class);
+                    controlButtonAbsensi(dataAbsen != null);
+                }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
 
-            }
-        });
+                }
+            });
+        } else {
+            Toast.makeText(this, "Tidak Bisa Absen", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void setUserName(String UserName) {

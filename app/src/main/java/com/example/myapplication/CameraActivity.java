@@ -101,8 +101,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             kembali.setOnClickListener(v -> {
                 Toast.makeText(this, "Silahkan ambil foto terlebih dahulu", Toast.LENGTH_SHORT).show();
             });
-        } else {
-
         }
     }
 
